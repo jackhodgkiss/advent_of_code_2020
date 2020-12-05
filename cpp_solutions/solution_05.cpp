@@ -40,6 +40,18 @@ auto decode_seat = [](const auto& seat)
     return result;
 };
 
+auto find_missing_seat = [](auto decoded_seat_ids)
+{
+    auto result = 0;
+    std::sort(decoded_seat_ids.begin(), decoded_seat_ids.end());
+    for(auto counter = decoded_seat_ids[0]; counter < decoded_seat_ids[decoded_seat_ids.size() - 1]; counter++)
+    {
+        auto index = counter - decoded_seat_ids[0];
+        if(counter != decoded_seat_ids[index]) { result = counter; break; }
+    }
+    return result;
+};
+
 auto main(int argc, char** argv) -> int
 {
     auto answer = std::pair<int, int>();
@@ -47,6 +59,7 @@ auto main(int argc, char** argv) -> int
     auto decoded_seat_ids = std::vector<int>();
     std::transform(airline_seats.begin(), airline_seats.end(), std::back_inserter(decoded_seat_ids), decode_seat);
     answer.first = *std::max_element(decoded_seat_ids.begin(), decoded_seat_ids.end());
+    answer.second = find_missing_seat(decoded_seat_ids);
     std::cout << "Answer Part One: " << answer.first << "\nAnswer Part Two: " << answer.second << "\n";
     return 0;
 }
