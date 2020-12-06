@@ -14,7 +14,7 @@ auto read_puzzle_input(std::string filepath) -> std::vector<std::string>
     return result;
 }
 
-auto identify_questions_answered_by_group = [](const auto group_buffer)
+auto identify_questions_answered = [](const auto group_buffer)
 {
     auto result = std::vector<char>();
     for(auto buffer_entry : group_buffer)
@@ -39,7 +39,7 @@ auto get_answer_count = [](const auto& collected_answers)
         if(line != "") { group_buffer.emplace_back(line); }
         else
         {
-            auto group_response = identify_questions_answered_by_group(group_buffer);
+            auto group_response = identify_questions_answered(group_buffer);
             for(auto question_id : group_response)
             {
                 question_to_frequency[question_id] += 1;
@@ -47,13 +47,50 @@ auto get_answer_count = [](const auto& collected_answers)
             group_buffer.clear();
         }
     }
-    auto group_response = identify_questions_answered_by_group(group_buffer);
+    auto group_response = identify_questions_answered(group_buffer);
     for(auto question_id : group_response)
     {
         question_to_frequency[question_id] += 1;
     }
     return question_to_frequency;
 };
+
+auto identify_questions_answered_by_group = [](const auto group_buffer)
+{
+    auto result = std::vector<char>();
+    auto question_to_frequency = std::map<char, int>();
+    for(auto character_int = (int) 'a'; character_int <= (int) 'z'; character_int++);
+    for(auto buffer_entry : group_buffer)
+    {
+        for(auto question_id : buffer_entry)
+        {
+            question_to_frequency[question_id] += 1;
+        }
+    }
+    auto group_size = group_buffer.size();
+    for(auto iter : question_to_frequency) { if(iter.second == group_size) { result.emplace_back(iter.first); } }
+    return result;
+};
+
+auto get_real_answer_count = [](const auto& collected_answers)
+{
+    auto result = 0;
+    auto group_buffer = std::vector<std::string>();
+    for(auto line : collected_answers)
+    {
+        if(line != "") { group_buffer.emplace_back(line); }
+        else
+        {
+            auto group_response = identify_questions_answered_by_group(group_buffer);
+            result += group_response.size();
+            group_buffer.clear();
+        }
+    }
+    auto group_response = identify_questions_answered_by_group(group_buffer);
+    result += group_response.size();
+    return result;
+};
+
 
 auto main(int argc, char** argv) -> int
 {
@@ -63,6 +100,7 @@ auto main(int argc, char** argv) -> int
     auto question_to_frequency = get_answer_count(collected_answers);
     answer.first = std::accumulate(question_to_frequency.begin(), question_to_frequency.end(), 0, 
         [](int sum, const std::map<char, int>::value_type& pair) { return sum + pair.second; });
+    answer.second = get_real_answer_count(collected_answers);
     std::cout << "Answer Part One: " << answer.first << "\nAnswer Part Two: " << answer.second << "\n";
     return 0;
 }
